@@ -6,7 +6,7 @@ import java.time.OffsetDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class FwkTransactionHst(
-        var transactionDate: LocalDate = LocalDate.now(), // 거래 일자
+        var trDy: LocalDate = LocalDate.now(), // 거래 일자
         var gid: String = "",                             // 글로벌 ID
         var method: String = "",                          // HTTP Method ( GET, PUT.. )
         var path: String = "",                            // API URL
@@ -16,7 +16,7 @@ data class FwkTransactionHst(
         var referrer: String? = null,                     // 호출 URL
         var remoteIp: String = "",                        // 호출지 IP
         var statCode: String? = null,                     // HTTP 상태 코드 (200, 500..)
-        var queryString: String? = null,                  // HTTP Query String
+        var queryStr: String? = null,                     // HTTP Query String
         var body: String? = null,                         // HTTP Input Body
         var errMsg: String? = null,                       // 에러 메시지
         var createUserId: Int? = null,                    // 생성자 ID

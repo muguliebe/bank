@@ -19,13 +19,8 @@ import java.time.format.DateTimeFormatter
 @Service
 class TransactionService : BaseService() {
 
-    @Autowired lateinit var mapper: TransactionMapper  // 거래내역
-
-    /**
-     * 모든 거래내역 조회
-     */
-    fun getTransactions() = mapper.selectListAllTransaction()
-
+    @Autowired
+    lateinit var mapper: TransactionMapper  // 거래내역
 
     /**
      * 거래내역 생성
@@ -35,7 +30,7 @@ class TransactionService : BaseService() {
 
         // set insert input
         val tr = FwkTransactionHst()
-        tr.transactionDate = LocalDate.parse(commons.date)
+        tr.trDy = LocalDate.parse(commons.date)
         tr.gid = commons.gid
         tr.method = commons.method
         tr.path = commons.path
@@ -47,7 +42,7 @@ class TransactionService : BaseService() {
             else -> commons.elapsed
         }
         tr.remoteIp = commons.remoteIp
-        tr.queryString = commons.queryString
+        tr.queryStr = commons.queryString
         tr.body = commons.body
         tr.errMsg = commons.errMsg
         tr.referrer = commons.referrer

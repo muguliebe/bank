@@ -3,28 +3,6 @@
 
 <mapper namespace="com.exam.bank.repo.mybatis.TransactionMapper">
 
-    <select id="selectListAllTransaction" resultType="FwkTransactionHst">
-        select /* fwk@selectListAllTransaction@모든 거래내역 조회 */
-            tr_dy as transactionDate
-             , gid
-             , method
-             , path
-             , status_code
-             , start_time
-             , end_time
-             , elapsed
-             , remote_ip
-             , query_string
-             , body
-             , referrer
-             , error_message as errMsg
-             , create_user_id
-             , create_dt
-          from fwk_transaction_hst a /* T. 거래내역 */
-         where 1 = 1
-           and 2 = 2
-    </select>
-
     <insert id="insertTransaction" parameterType="FwkTransactionHst">
         insert /* fwk@insertTransaction@거래내역 생성 */
           into fwk_transaction_hst (
@@ -37,15 +15,15 @@
                                    , end_time
                                    , elapsed
                                    , remote_ip
-                                   , query_string
+                                   , query_str
                                    , body
-                                   , error_message
+                                   , error_msg
                                    , referrer
                                    , create_dt
                                    , create_user_id
           )
         values (
-                   #{transactionDate}
+                   #{trDy}
                , #{gid}
                , #{method}
                , #{path}
@@ -54,7 +32,7 @@
                , #{endTime}
                , #{elapsed}
                , #{remoteIp}
-               , #{queryString}
+               , #{queryStr}
                , #{body}::JSON
                , #{errMsg}
                , #{referrer}

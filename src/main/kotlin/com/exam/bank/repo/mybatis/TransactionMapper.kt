@@ -5,6 +5,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface TransactionMapper {
-    fun selectListAllTransaction(): List<FwkTransactionHst>
     fun insertTransaction(transaction: FwkTransactionHst)
 }
