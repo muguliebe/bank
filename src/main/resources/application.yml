@@ -1,0 +1,12 @@
+server:
+  port: 8080
+spring:
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+  flyway:
+    enabled: true
+    validate-on-migrate: true
+    encoding: UTF-8
