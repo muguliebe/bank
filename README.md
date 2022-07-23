@@ -18,11 +18,13 @@ src                       ---- 소스 Root
  |   |  └ controller           |     |   └--- HTTP 요청 진입점
  |   |  └ dto                  |     |   └--- Data Transfer Object
  |   |  └ entity               |     |   └--- 테이블과 매칭되는 엔티티 영역
+ |   |  └ ext                  |     |   └--- 대외계 전문
  |   |  └ repo                 |     |   └--- JPA or MyBatis Repository
  |   |  └ service              |     |   └--- 비즈니스 로직
  |   |  └ task                 |     |   └--- 주기적인 작업
  |   └ fwk                     |     └- 프레임워크 영역
  |      └ core                 |     |   └--- 프레임웤 기본
+ |      |  └ annotation        |     |   |    └--- annotation
  |      |  └ base              |     |   |    └--- controller, service 등에서 상속받아야 하는 상위 클래스 모임
  |      |  └ component         |     |   |    └--- 컴포넌트 for framework
  |      |  └ error             |     |   |    └--- 에러 클래스 집합

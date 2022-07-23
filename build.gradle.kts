@@ -43,6 +43,14 @@ dependencies {
     implementation("com.google.guava:guava:31.1-jre")
 
     // etc
+    implementation("com.github.kittinunf.fuel:fuel:2.3.1")
+    implementation("com.github.kittinunf.fuel:fuel-jackson:2.3.1")
+    implementation("commons-io:commons-io:2.11.0")
+    implementation("com.google.code.gson:gson:2.9.0")
+
+
+
+
 
     // develop
     developmentOnly("org.springframework.boot:spring-boot-devtools")

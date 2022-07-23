@@ -7,7 +7,7 @@ CREATE  TABLE "public".com_user_mst (
                                         create_user_id       varchar(20)    ,
                                         update_dt            timestamptz    ,
                                         update_pgm_id        varchar(20)    ,
-                                        update_user_id       integer    ,
+                                        update_user_id       varchar(20)    ,
                                         user_nm              varchar(20)  NOT NULL  ,
                                         user_seq_no          varchar(10)  NOT NULL  ,
                                         CONSTRAINT com_user_mst_pk PRIMARY KEY ( user_id )

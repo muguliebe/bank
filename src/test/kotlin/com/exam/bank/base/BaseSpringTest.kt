@@ -14,7 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = [AppMain::class])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = [AppMain::class])
 class BaseSpringTest : BaseTest() {
 
     @Autowired lateinit var ctx: ApplicationContext

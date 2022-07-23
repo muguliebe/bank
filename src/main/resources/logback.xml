@@ -55,11 +55,18 @@
 
     <!-- 3rd party -->
     <logger name="org.hibernate" level="info" additivity="false"/>
+    <logger name="com.github.dockerjava" level="info" additivity="false"/>
+    <logger name="org.testcontainers" level="info" additivity="false"/>
+    <logger name="org.springframework" level="info" additivity="false"/>
+    <logger name="_org.springframework" level="info" additivity="false"/>
+    <logger name="org.flywaydb" level="info" additivity="false"/>
+    <logger name="org.apache" level="info" additivity="false"/>
+    <logger name="org.mybatis" level="info" additivity="false"/>
 
     <!-- repository -->
     <logger name="com.exam.bank.repo" level="debug" additivity="true"/>
 
-    <root level="info">
+    <root level="debug">
         <appender-ref ref="console"/>
         <appender-ref ref="appenderServer"/>
     </root>

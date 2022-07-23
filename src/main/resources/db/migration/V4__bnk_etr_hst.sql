@@ -5,21 +5,25 @@ CREATE  TABLE "public".bnk_etr_hst (
                                        create_user_id       varchar(20)    ,
                                        update_dt            timestamptz    ,
                                        update_pgm_id        varchar(20)    ,
-                                       update_user_id       integer    ,
+                                       update_user_id       varchar(20)    ,
                                        gid                  varchar(36)  NOT NULL  ,
                                        tr_dy                varchar(8)  NOT NULL  ,
                                        etr_url              varchar(30)  NOT NULL  ,
                                        user_id              integer  NOT NULL  ,
                                        bank_tran_id         varchar(20)  NOT NULL  ,
                                        etr_stat_cd          varchar(2) DEFAULT '01' NOT NULL  ,
-                                       etr_req_json         json    ,
-                                       etr_res_json         json    ,
+                                       rsp_code             varchar(5)    ,
+                                       rsp_message          varchar(300)    ,
+                                       etr_req_val          text    ,
+                                       etr_res_val          text    ,
                                        CONSTRAINT pk_bnk_etr_hst PRIMARY KEY ( seq )
 );
 
 CREATE INDEX idx_bnk_etr_hst_0 ON "public".bnk_etr_hst  ( user_id, bank_tran_id );
 CREATE INDEX idx_bnk_etr_hst ON "public".bnk_etr_hst  ( tr_dy, user_id, bank_tran_id );
 CREATE INDEX idx_bnk_etr_hst_1 ON "public".bnk_etr_hst  ( tr_dy, etr_stat_cd );
+CREATE UNIQUE INDEX unq_bnk_etr_hst ON "public".bnk_etr_hst ( tr_dy, bank_tran_id );
+
 COMMENT ON TABLE "public".bnk_etr_hst IS '대외거래내역';
 COMMENT ON COLUMN "public".bnk_etr_hst.seq IS '순번';
 COMMENT ON COLUMN "public".bnk_etr_hst.create_dt IS '생성 일시';
@@ -33,6 +37,8 @@ COMMENT ON COLUMN "public".bnk_etr_hst.tr_dy IS '거래 일자';
 COMMENT ON COLUMN "public".bnk_etr_hst.etr_url IS '대외거래 URL';
 COMMENT ON COLUMN "public".bnk_etr_hst.user_id IS '사용자 ID';
 COMMENT ON COLUMN "public".bnk_etr_hst.bank_tran_id IS '거래고유번호';
-COMMENT ON COLUMN "public".bnk_etr_hst.etr_stat_cd IS '대외 거래 상태 코드 [01:요청, 02:전송, 03:타임아웃, 04:수신]';
-COMMENT ON COLUMN "public".bnk_etr_hst.etr_req_json IS '대외 요청 JSON';
-COMMENT ON COLUMN "public".bnk_etr_hst.etr_res_json IS '대외 응답 JSON';
+COMMENT ON COLUMN "public".bnk_etr_hst.etr_stat_cd IS '대외거래 상태 코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]';
+COMMENT ON COLUMN "public".bnk_etr_hst.rsp_code IS '응답코드(대외기관)';
+COMMENT ON COLUMN "public".bnk_etr_hst.rsp_message IS '응답메시지(대외기관)';
+COMMENT ON COLUMN "public".bnk_etr_hst.etr_req_val IS '대외 요청 값';
+COMMENT ON COLUMN "public".bnk_etr_hst.etr_res_val IS '대외 응답 값';

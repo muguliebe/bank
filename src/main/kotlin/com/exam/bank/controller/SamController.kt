@@ -13,4 +13,5 @@ class SamController: BaseController() {
     fun sam(): String {
         return "sam"
     }
+
 }

@@ -24,8 +24,12 @@ object DateUtils {
     // 현재 일자 (yyyy-MM-dd) 리턴
     fun currentDate(): String = currentDateTimeFormat("yyyy-MM-dd")
 
+    // 현재 일자 (yyyyMMdd) 리턴
+    fun currentDy(): String = currentDateTimeFormat("yyyyMMdd")
+
     // TimeStamp(yyyy.MM.dd HH:mm:ss) 리턴
     fun currentTimeStamp(): OffsetDateTime = OffsetDateTime.now(zoneId)
     fun currentTimestampString(): String = currentDateTimeFormat("yyyy-MM-dd HH:mm:ss")
+    fun currentTimeWithoutColon(): String = currentDateTimeFormat("SSSSSS")
 
 }
