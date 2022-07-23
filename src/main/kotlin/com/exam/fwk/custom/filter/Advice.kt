@@ -1,7 +1,7 @@
 package com.exam.fwk.custom.filter
 
 import ch.qos.logback.classic.Logger
-import com.exam.fwk.core.component.Area
+import com.exam.fwk.core.component.Commons
 import com.exam.fwk.core.error.BaseException
 import com.exam.fwk.custom.service.TransactionService
 import com.exam.bank.utils.DateUtils
@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.system.measureTimeMillis
 
+@Suppress("unused")
 @Aspect
 @Component
 class Advice {
@@ -31,7 +32,7 @@ class Advice {
         val log: Logger = LoggerFactory.getLogger(Advice::class.java) as Logger
     }
 
-    @Autowired lateinit var area: Area                             // Common 영역
+    @Autowired lateinit var commons: Commons                             // Common 영역
     @Autowired lateinit var serviceTransaction: TransactionService // 거래내역 서비스
 
     /**
@@ -41,22 +42,21 @@ class Advice {
     fun aroundController(pjp: ProceedingJoinPoint): Any? {
 
         // Init --------------------------------------------------------------------------------------------------------
-        var result: Any? = null
+        lateinit var result: Any
         val req = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).request
-        val commons = area.commons
+        val comArea = commons.area
         val signatureName = "${pjp.signature.declaringType.simpleName}.${pjp.signature.name}"
 
-        setAuth(req)       // 사용자 인증 처리
         setCommonArea(req) // CommonArea 설정
 
         // Main --------------------------------------------------------------------------------------------------------
-        log.info("[${commons.gid}] >>>>>  controller start [$signatureName() from [${req.remoteAddr}] by ${req.method} ${req.requestURI}")
+        log.info("[${comArea.gid}] >>>>>  controller start [$signatureName() from [${req.remoteAddr}] by ${req.method} ${req.requestURI}")
         try {
-            area.commons.elapsed = measureTimeMillis {
+            comArea.elapsed = measureTimeMillis {
                 result = pjp.proceed()
             }
         } catch (e: Exception) {
-            log.info("[${commons.gid}] <<<<<  controller   end [$signatureName() from [${commons.remoteIp}] [${commons.elapsed}ms] with Error [${e.javaClass.simpleName}]")
+            log.info("[${comArea.gid}] <<<<<  controller   end [$signatureName() from [${comArea.remoteIp}] [${comArea.elapsed}ms] with Error [${e.javaClass.simpleName}]")
             saveTransaction(e) // 거래내역 저장
             throw e
         }
@@ -64,39 +64,28 @@ class Advice {
         // End ---------------------------------------------------------------------------------------------------------
         saveTransaction() // 거래내역 저장
 
-        log.info("[${commons.gid}] <<<<<  controller   end [$signatureName() from [${commons.remoteIp}] [${commons.elapsed}ms]")
+        log.info("[${comArea.gid}] <<<<<  controller   end [$signatureName() from [${comArea.remoteIp}] [${comArea.elapsed}ms]")
         return result
 
     }
-
-    /**
-     * 사용자 인증 처리
-     */
-    fun setAuth(req: HttpServletRequest) {
-
-        // JWT 로부터 CommonUser 를 decode
-        val jwt = req.getHeader("authorization") ?: return
-
-    }
-
 
     /**
      * Common Area 셋팅
      */
     private fun setCommonArea(req: HttpServletRequest) {
 
-        val commons = area.commons
-        commons.startDt = OffsetDateTime.now(ZoneId.of("+9"))
-        commons.date = DateUtils.currentDate()
-        commons.gid = UUID.randomUUID().toString()
-        commons.path = req.requestURI
-        commons.remoteIp = req.remoteAddr
-        commons.queryString = req.queryString
-        commons.method = req.method
+        val comArea = commons.area
+        comArea.startDt = OffsetDateTime.now(ZoneId.of("+9"))
+        comArea.date = DateUtils.currentDate()
+        comArea.gid = UUID.randomUUID().toString()
+        comArea.path = req.requestURI
+        comArea.remoteIp = req.remoteAddr
+        comArea.queryString = req.queryString
+        comArea.method = req.method
 
         if (req.getHeader("referer") != null) {
             val referrer = req.getHeader("referer")
-            commons.referrer = URI(referrer).path
+            comArea.referrer = URI(referrer).path
         }
 
     }
@@ -108,16 +97,16 @@ class Advice {
 
         val request = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).request
         val response = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response as HttpServletResponse
-        val commons = area.commons
-        commons.err = ex
-        commons.endDt = OffsetDateTime.now(ZoneId.of("+9"))
-        commons.elapsed = Duration.between(commons.startDt, commons.endDt).toMillis()
+        val comArea = commons.area
+        comArea.err = ex
+        comArea.endDt = OffsetDateTime.now(ZoneId.of("+9"))
+        comArea.elapsed = Duration.between(comArea.startDt, comArea.endDt).toMillis()
 
 
-        commons.statCd = response.status.toString()
+        comArea.statCd = response.status.toString()
 
         val originalUri = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI)
-        originalUri?.let { commons.path = originalUri.toString() }
+        originalUri?.let { comArea.path = originalUri.toString() }
 
         ex?.let {
             // error message
@@ -127,14 +116,14 @@ class Advice {
                 errorStack.add(cause.cause!!.message.toString())
                 cause = cause.cause!!
             }
-            commons.errMsg = cause.message
+            comArea.errMsg = cause.message
 
             // status code
-            if (ex is BaseException) commons.statCd = ex.httpStatus.value().toString()
-            else commons.statCd = "500"
+            if (ex is BaseException) comArea.statCd = ex.httpStatus.value().toString()
+            else comArea.statCd = "500"
         }
 
-        serviceTransaction.insertTransaction(commons)
+        serviceTransaction.insertTransaction(comArea)
     }
 
     /**

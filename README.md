@@ -6,7 +6,7 @@
 - Framework: Spring Boot
 - Language: Kotlin
 - DB: Postgres ( Embedded )
-- Docker
+- Docker 구동 필요
 
 ## 실행방법
 - 

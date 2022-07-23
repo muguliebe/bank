@@ -18,6 +18,41 @@
         </encoder>
     </appender>
 
+    <!--
+    File Appender - Server Log
+    -->
+    <appender name="appenderServer" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logHome}server.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logHomeBackup}server.log.%d{yyMMdd}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <springProfile name="local">
+                <pattern>[%d{HH:mm:ss.SSS}:%-5p:%c{0}:%L] %m%n</pattern>
+            </springProfile>
+            <springProfile name="!local">
+                <pattern>[%d{HH:mm:ss.SSS}:%-5p:%c{0}] %m%n</pattern>
+            </springProfile>
+        </encoder>
+        <param name="MaxBackupIndex" value="4"/>
+    </appender>
+
+    <!--
+        File Appender - Error Log
+     -->
+    <appender name="appenderError" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logHome}error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logHomeBackup}error.log.%d{yyMMdd}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>[%d{HH:mm:ss.SSS}:%c] %m%n</pattern>
+        </encoder>
+        <param name="MaxBackupIndex" value="4"/>
+    </appender>
+
     <!-- 3rd party -->
     <logger name="org.hibernate" level="info" additivity="false"/>
 
@@ -26,6 +61,7 @@
 
     <root level="info">
         <appender-ref ref="console"/>
+        <appender-ref ref="appenderServer"/>
     </root>
 
 </configuration>

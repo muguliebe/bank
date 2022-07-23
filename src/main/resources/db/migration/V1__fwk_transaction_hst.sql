@@ -1,8 +1,6 @@
 drop table if exists fwk_transaction_hst;
 CREATE  TABLE fwk_transaction_hst (
                                              tr_dy                date  NOT NULL  ,
-                                             app_nm               varchar(20)  NOT NULL  ,
-                                             app_ver              varchar(20)  NOT NULL  ,
                                              gid                  varchar(255)  NOT NULL  ,
                                              "method"             varchar(6)    ,
                                              "path"               varchar(2000)    ,
@@ -20,11 +18,9 @@ CREATE  TABLE fwk_transaction_hst (
                                              create_dt            timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE INDEX idx_fwk_transaction_hst ON fwk_transaction_hst  ( tr_dy, app_nm, app_ver, gid );
+CREATE INDEX idx_fwk_transaction_hst ON fwk_transaction_hst  ( tr_dy, gid );
 COMMENT ON TABLE fwk_transaction_hst IS '거래내역';
 COMMENT ON COLUMN fwk_transaction_hst.tr_dy IS '거래 일자';
-COMMENT ON COLUMN fwk_transaction_hst.app_nm IS '어플리케이션 명';
-COMMENT ON COLUMN fwk_transaction_hst.app_ver IS '어플리케이션 버전';
 COMMENT ON COLUMN fwk_transaction_hst.gid IS '글로벌 ID';
 COMMENT ON COLUMN fwk_transaction_hst."method" IS 'Http Method [GET,POST...]';
 COMMENT ON COLUMN fwk_transaction_hst."path" IS '요청 경로';
