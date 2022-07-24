@@ -22,7 +22,7 @@ CREATE  TABLE "public".bnk_etr_hst (
 CREATE INDEX idx_bnk_etr_hst_0 ON "public".bnk_etr_hst  ( user_id, bank_tran_id );
 CREATE INDEX idx_bnk_etr_hst ON "public".bnk_etr_hst  ( tr_dy, user_id, bank_tran_id );
 CREATE INDEX idx_bnk_etr_hst_1 ON "public".bnk_etr_hst  ( tr_dy, etr_stat_cd );
-CREATE UNIQUE INDEX unq_bnk_etr_hst ON "public".bnk_etr_hst ( tr_dy, bank_tran_id );
+CREATE INDEX unq_bnk_etr_hst ON "public".bnk_etr_hst ( tr_dy, bank_tran_id );
 
 COMMENT ON TABLE "public".bnk_etr_hst IS '대외거래내역';
 COMMENT ON COLUMN "public".bnk_etr_hst.seq IS '순번';
