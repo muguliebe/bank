@@ -5,21 +5,8 @@ import com.exam.fwk.core.annotation.Required
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
+@Suppress("unused")
 class OpenApiServiceDto {
-    /**
-     * 수취인 조회 입력
-     */
-    data class GetConsigneeIn(
-        val cntrAccountNum: String,        // 약정 계좌번호
-        val printContent: String,          // 입금계좌인자내역
-        val tranAmt: String,               // 거래금액
-        val reqClientName: String,         // 요청고객성명
-        val reqClientNum: String,          // 요청고객회원번호
-    ) {
-        override fun toString(): String {
-            return "GetConsigneeIn(cntrAccountNum='$cntrAccountNum', printContent='$printContent', tranAmt='$tranAmt', reqClientName='$reqClientName', reqClientNum='$reqClientNum')"
-        }
-    }
 
     /**
      * 오픈뱅킹 수취인 조회 요청
@@ -85,10 +72,11 @@ class OpenApiServiceDto {
         @Required @Length(len = 20) var bankTranId: String = "",            // 거래고유번호
         @Required @Length(len = 1) var cntrAccountType: String = "N",       // 약정계좌구분[N:계좌, C:계정]
         @Required @Length(len = 16) var cntrAccountNum: String = "",        // 약정 계좌번호
-        @Required @Length(len = 20) var dpsPrintContent: String = "",       // 입금계좌인자내역
-        @Required @Length(len = 24) var fintechUseNum: String = "",         // 출금계좌핀테크이용번호
-        @Length(len = 24) var wdPrintContent: String = "",                  // 출금계좌인자내역
+        @Required @Length(len = 3) var wdBankCodeStd: String = "",          // 출금은행.표준코드
+        @Required @Length(len = 16) var wdAccountNum: String = "",          // 출금계좌번호
         @Required @Length(len = 12) var tranAmt: String = "",               // 거래금액
+        @Length(len = 14) var wdPrintContent: String = "",                  // 출금계좌인자내역
+        @Required @Length(len = 10) var userSeqNo: String = "",             // 사용자일련번호
         @Required @Length(len = 14) var tranDtime: String = "",             // 요청일시
         @Required @Length(len = 20) var reqClientName: String = "",         // 요청고객성명
         @Length(len = 3) var reqClientBankCode: String? = null,             // 요청고객계좌 개설기관.표준코드

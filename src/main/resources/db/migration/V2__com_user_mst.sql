@@ -1,7 +1,7 @@
 drop table if exists "public".com_user_mst;
 create sequence com_user_mst_user_id_seq start 1;
 CREATE  TABLE "public".com_user_mst (
-                                        user_id              integer DEFAULT nextval('com_user_mst_user_id_seq'::regclass) NOT NULL  ,
+                                        user_id              bigint DEFAULT nextval('com_user_mst_user_id_seq'::regclass) NOT NULL  ,
                                         create_dt            timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL  ,
                                         create_pgm_id        varchar(20)    ,
                                         create_user_id       varchar(20)    ,

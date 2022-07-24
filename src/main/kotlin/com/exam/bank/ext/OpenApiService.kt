@@ -1,10 +1,12 @@
 package com.exam.bank.ext
 
 import com.exam.bank.entity.BnkEtrHst
+import com.exam.bank.ext.OpenApiServiceDto.*
 import com.exam.bank.repo.jpa.BnkEtrRepo
 import com.exam.bank.repo.mybatis.SequenceMapper
 import com.exam.bank.utils.DateUtils
 import com.exam.fwk.core.base.BaseService
+import com.exam.fwk.core.error.EtrErrException
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
@@ -12,15 +14,14 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.extensions.jsonBody
+import com.github.kittinunf.result.Result
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
-import com.github.kittinunf.result.Result;
 
 
 @Service
@@ -30,7 +31,6 @@ class OpenApiService : BaseService() {
     @Autowired lateinit var repoEtr: BnkEtrRepo
 
     lateinit var objectMapper: ObjectMapper             // JSON Mapper
-    lateinit var gson: Gson                             // GSON
     @Value("\${server.port}") lateinit var openBankPort: String    // 오픈뱅킹 포트
     val bankIdPrefix = "OPENBANK11U"                    // 이용기관코드
 
@@ -78,19 +78,23 @@ class OpenApiService : BaseService() {
 
     /**
      * 수취인 조회
+     * - bankTranId 는 OpenApiService.getBankTranId() 를 통하여 채번하여 넘겨주어야 합니다.
      */
-    fun getConsignee(input: OpenApiServiceDto.GetConsigneeIn) {
+    fun getConsignee(input: ConsigneeGetReq): ConsigneeGetRes {
+
         // init
         val url = "/v2.0/inquiry/receive"
-        val req: OpenApiServiceDto.ConsigneeGetReq = OpenApiServiceDto.ConsigneeGetReq() // 오픈뱅킹용 req body
-        BeanUtils.copyProperties(input, req)
 
         // 오픈뱅킹 수취인 조회 요청 JSON 생성
-        req.bankTranId = getBankTranId() // 거래고유번호
-        val reqJson = objectMapper.writeValueAsString(req)
+        val reqJson = objectMapper.writeValueAsString(input)
 
         // 요청 전 대외거래내역 저장
-        val bnkEtrHst = saveBnkEtrHst(req.bankTranId, url, input.reqClientNum, reqJson)
+        val bnkEtrHst = saveBnkEtrHst(
+            bankTranId = input.bankTranId,
+            url = url,
+            userId = input.reqClientNum,
+            etrReqVal = reqJson
+        )
 
         // Response
         val (request, response, result) = Fuel.post(url)
@@ -99,29 +103,135 @@ class OpenApiService : BaseService() {
 
         when (result) {
             is Result.Failure -> {
-                log.error("오픈뱅킹 수취인조회 API 에러 발생")
-                updateErrBnkEtrHst(bnkEtrHst.trDy, req.bankTranId, response.responseMessage)
+                log.error("오픈뱅킹 수취인조회 API 에러 발생:${response.responseMessage}")
+
+                updateBnkEtrHst(
+                    trDy = bnkEtrHst.trDy,
+                    bankTranId = input.bankTranId,
+                    etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = response.responseMessage
+                )
+
+                throw EtrErrException(result.getException(), "ETR0001") // ETR0001:대외거래응답 에러입니다.
             }
             is Result.Success -> {
-                updateOkBnkEtrHst(bnkEtrHst.trDy, req.bankTranId, result.value)
-//                val json = objectMapper.readValue(result.value, GetConsigneeRes::class.java)
+
+                updateBnkEtrHst(
+                    trDy = bnkEtrHst.trDy,
+                    bankTranId = input.bankTranId,
+                    etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = result.value
+                )
+
+                return objectMapper.readValue(result.get(), ConsigneeGetRes::class.java)
             }
         }
-
 
     }
 
     /**
      * 출금이체 요청
+     * - bankTranId 는 OpenApiService.getBankTranId() 를 통하여 채번하여 넘겨주어야 합니다.
      */
-    fun postWdtrReq () {
+    fun postWdtrReq(input: WdtrReq): WdtrRes {
+        // init
+        val url = "/v2.0/transfer/withdraw/acnt_num"
 
+        // 오픈뱅킹 수취인 조회 요청 JSON 생성
+        val reqJson = objectMapper.writeValueAsString(input)
+
+        // 요청 전 대외거래내역 저장
+        val bnkEtrHst = saveBnkEtrHst(
+            bankTranId = input.bankTranId,
+            url = url,
+            userId = input.reqClientNum,
+            etrReqVal = reqJson
+        )
+
+        // Response
+        val (request, response, result) = Fuel.post(url)
+            .jsonBody(reqJson)
+            .responseString()
+
+        when (result) {
+            is Result.Failure -> { // 요청 실패 시: 대외거래내역 업데이트 후, 에러 throw
+                log.error("오픈뱅킹 출금이체 API 에러 발생:${response.responseMessage}")
+
+                updateBnkEtrHst(
+                    trDy = bnkEtrHst.trDy,
+                    bankTranId = input.bankTranId,
+                    etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = response.responseMessage
+                )
+
+                throw EtrErrException(result.getException(), "ETR0001") // ETR0001:대외거래응답 에러입니다.
+            }
+            is Result.Success -> { // 요청 성공 시: 대외거래내역 업데이트 후, 응답 리턴
+
+                updateBnkEtrHst(
+                    trDy = bnkEtrHst.trDy,
+                    bankTranId = input.bankTranId,
+                    etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = result.value
+                )
+
+                return objectMapper.readValue(result.get(), WdtrRes::class.java)
+            }
+        }
     }
 
     /**
-     * 입금이체 요청
+     * 입금이체 단건 요청
+     * - bankTranId 는 OpenApiService.getBankTranId() 를 통하여 채번하여 넘겨주어야 합니다.
+     * - 입금이체 요청은 단건만 지원합니다.
      */
-    fun postDpstr() {
+    fun postDpstr(input: DpstrReq): DpstrRes? {
+
+        // init
+        val url = "/v2.0/transfer/deposit/acnt_num"
+
+        // 오픈뱅킹 수취인 조회 요청 JSON 생성
+        val reqJson = objectMapper.writeValueAsString(input)
+
+        // 요청 전 대외거래내역 저장
+        val bnkEtrHst = saveBnkEtrHst(
+            bankTranId = input.reqList[0].bankTranId,
+            url = url,
+            userId = input.reqList[0].reqClientNum,
+            etrReqVal = reqJson
+        )
+
+        // Response
+        val (request, response, result) = Fuel.post(url)
+            .jsonBody(reqJson)
+            .responseString()
+
+        when (result) {
+            is Result.Failure -> { // 요청 실패 시: 대외거래내역 업데이트 후, 에러 throw
+                log.error("오픈뱅킹 입금이체 API 에러 발생:${response.responseMessage}")
+
+                updateBnkEtrHst(
+                    trDy = bnkEtrHst.trDy,
+                    bankTranId = input.reqList[0].bankTranId,
+                    etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = response.responseMessage
+                )
+
+                throw EtrErrException(result.getException(), "ETR0001") // ETR0001:대외거래응답 에러입니다.
+            }
+            is Result.Success -> { // 요청 성공 시: 대외거래내역 업데이트 후, 응답 리턴
+
+                updateBnkEtrHst(
+                    trDy = bnkEtrHst.trDy,
+                    bankTranId = input.reqList[0].bankTranId,
+                    etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = result.value
+                )
+
+                return objectMapper.readValue(result.get(), DpstrRes::class.java)
+            }
+        }
+
 
     }
 
@@ -133,51 +243,40 @@ class OpenApiService : BaseService() {
     /**
      * 대외거래내역 저장
      */
-    private fun saveBnkEtrHst(bankTranId: String, url: String, reqClientNum: String, etrReqVal: String): BnkEtrHst {
-        // DB Insert : 대외거래내역
+    private fun saveBnkEtrHst(bankTranId: String, url: String, userId: String, etrReqVal: String): BnkEtrHst {
         val inSave = BnkEtrHst()
         inSave.createDt = DateUtils.currentTimeStamp()  // 생성일시
         inSave.createPgmId = javaClass.simpleName       // 생성프로그램 ID
-        inSave.createUserId = reqClientNum              // 생성자 ID
+        inSave.createUserId = userId                    // 생성자 ID
         inSave.gid = commons.area.gid                   // gid
         inSave.trDy = DateUtils.currentDy()             // 거래일자
         inSave.bankTranId = bankTranId                  // 거래고유번호
         inSave.etrUrl = url                             // 대외거래요청URL
-        inSave.userId = Integer.valueOf(reqClientNum)   // 사용자ID
-        inSave.etrStatCd = "01"                         // 대외거래 상태 코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+        inSave.userId = userId.toBigInteger()           // 사용자ID
+        inSave.etrStatCd = "01"                         // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
         inSave.etrReqVal = etrReqVal                    // 대외거래요청값
+
+        // DB Insert : 대외거래내역
         val saved = repoEtr.save(inSave)
         log.debug("대외거래내역 저장:${saved}")
         return inSave
     }
 
     /**
-     * 대외거래내역 정상응답 수정
+     * 대외거래내역 수정
      * - 거래일자, 거래고유번호, 대외요청응답값
      */
-    private fun updateOkBnkEtrHst(trDy: String, bankTranId: String, etrResVal: String) {
+    private fun updateBnkEtrHst(trDy: String, bankTranId: String, etrStatCd: String, etrResVal: String): BnkEtrHst {
         val exist = repoEtr.findByTrDyAndBankTranId(trDy, bankTranId)
         exist.updateDt = DateUtils.currentTimeStamp()       // 생성일시
         exist.updatePgmId = javaClass.simpleName            // 생성프로그램 ID
-        exist.etrStatCd = "04"                              // 대외거래 상태 코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+        exist.etrStatCd = etrStatCd                         // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
         exist.etrResVal = etrResVal
-        log.debug("대외거래내역 수정:${exist}")
-        repoEtr.save(exist)
-    }
 
-    /**
-     * 대외거래내역 에러응답 수정
-     * - 거래일자, 거래고유번호, 대외요청응답값
-     */
-    private fun updateErrBnkEtrHst(trDy: String, bankTranId: String, etrResVal: String?) {
-        val exist = repoEtr.findByTrDyAndBankTranId(trDy, bankTranId)
-        exist.updateDt = DateUtils.currentTimeStamp()       // 생성일시
-        exist.updatePgmId = javaClass.simpleName            // 생성프로그램 ID
-        exist.etrStatCd = "04"                              // 대외거래 상태 코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
-        etrResVal?.let{ exist.etrResVal = etrResVal }
+        // DB Update : 대외거래내역
         val saved = repoEtr.save(exist)
-        log.debug("대외거래내역 수정:${saved}")
+        log.debug("대외거래내역 수정:${exist}")
+        return saved
     }
-
 
 }
