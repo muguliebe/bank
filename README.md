@@ -59,4 +59,5 @@ test                      ---- 테스트 Root
 ![all](/docs/flow.png)
 
 ## ERD
+[HTML로 보기](/docs/erd.html)
 ![all](/docs/erd.png)
