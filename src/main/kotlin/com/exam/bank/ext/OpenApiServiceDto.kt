@@ -187,7 +187,7 @@ class OpenApiServiceDto {
      * 오픈뱅킹 입금이체 응답 Array
      */
     data class DpstrResSub(
-        @Required @Length(len = 5) var tranNo: String = "",         // 거래순번
+        @Length(len = 5) var tranNo: String = "",                   // 거래순번
         @Length(len = 20) var bankTranId: String = "",              // 거래고유번호(참가기관)
         @Length(len = 8) var bankTranDate: String = "",             // 거래일자(참가기관)
         @Length(len = 3) var bankCodeTran: String = "",             // 응답코드를 부여한 참가기관.표준코드
@@ -204,5 +204,58 @@ class OpenApiServiceDto {
         @Length(len = 20) var accountHolderName: String = "",       // 수취인성명
         @Length(len = 12) var tranAmt: String = "",                 // 거래금액
         @Length(len = 32) var cmsNum: String = "",                  // CMS 번호
+    )
+
+    /**
+     * 오픈뱅킹 이체결과 조회 요청
+     */
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+    data class GetTransResultReq(
+        var checkType: String = "",                                     // 체크유형[1:출금이체, 2:입금이체]
+        var tranDtime: String = "",                                     // 요청일시
+        var reqCnt: String = "",                                        // 요청건수
+        var reqList: ArrayList<GetTransResultReqSub> = arrayListOf()    // 요청목록
+    )
+
+    data class GetTransResultReqSub(
+        @Required @Length(len = 5) var tranNo: String = "",     // 거래순번
+        @Length(len = 20) var orgBankTranId: String = "",       // 원거래 거래고유번호(참가기관)
+        @Length(len = 8) var orgBankTranDate: String = "",      // 원거래 거래일자(참가기관)
+        @Length(len = 12) var orgTranAmt: String = "",          // 원거래 거래금액
+    )
+
+    /**
+     * 오픈뱅킹 이체결과 조회 응답
+     */
+    data class GetTransResultRes(
+        @Length(len = 40) var apiTranId: String = "",                   // 거래고유번호
+        @Length(len = 20) var apiTranDtm: Number = 0,                   // 거래일시(밀리세컨드)
+        @Length(len = 5) var rspCode: String = "",                      // 응답코드
+        @Length(len = 300) var rspMessage: String = "",                 // 응답메시지
+        @Length(len = 5) var resCnt: String = "",                       // 이체건수
+        var resList: ArrayList<GetTransResultResSub> = arrayListOf()    // 응답목록
+    )
+
+    data class GetTransResultResSub(
+        @Length(len = 5) var tranNo: String = "",                   // 거래순번
+        @Length(len = 20) var bankTranId: String = "",              // 거래고유번호(참가기관)
+        @Length(len = 8) var bankTranDate: String = "",             // 거래일자(참가기관)
+        @Length(len = 3) var bankRspCode: String = "",              // 응답코드(참가기관)
+        @Length(len = 100) var bankRspMessage: String = "",         // 응답메시지(참가기관)
+        @Length(len = 3) var wdBankCodeStd: String = "",            // 출금(개설)기관.표준코드
+        @Length(len = 7) var wdBankCodeSub: String = "",            // 출금기관.점별코드
+        @Length(len = 20) var wdBankName: String = "",              // 출금(개설)기관명
+        @Length(len = 20) var wdSavingsBankName: String? = null,    // 개별저축은행명
+        @Length(len = 24) var wdFintechUseNum: String? = null,      // 출금계좌 핀테크이용번호
+        @Length(len = 20) var wdAccountNumMasked: String = "",      // 출금계좌번호(출력용)
+        @Length(len = 14) var wdPrintContent: String = "",          // 출금계좌인자내역
+        @Length(len = 20) var wdAccountHolderName: String = "",     // 송금인성명
+        @Length(len = 3) var dpsBankCodeStd: String = "",           // 입금기관.표준코드
+        @Length(len = 7) var dpsBankCodeSub: String = "",           // 입금기관.점별코드
+        @Length(len = 20) var dpsBankName: String = "",             // 입금기관명
+        @Length(len = 20) var dpsAccountNumMasked: String = "",     // 입금계좌번호(출력용)
+        @Length(len = 20) var dpsPrintContent: String = "",         // 입금계좌인자내역
+        @Length(len = 20) var dpsAccountHolderName: String = "",    // 수취인성명
+        @Length(len = 12) var tranAmt: String = "",                 // 거래금액
     )
 }

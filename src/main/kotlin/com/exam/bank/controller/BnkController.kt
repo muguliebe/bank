@@ -2,19 +2,19 @@ package com.exam.bank.controller
 
 import com.exam.bank.ext.OpenApiService
 import com.exam.bank.service.BnkService
-import com.exam.fwk.custom.utils.DateUtils
-import com.exam.fwk.custom.utils.ValidUtils
 import com.exam.fwk.core.annotation.Required
 import com.exam.fwk.core.error.BizException
+import com.exam.fwk.custom.utils.DateUtils
+import com.exam.fwk.custom.utils.ValidUtils
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import io.swagger.annotations.Api
-import io.swagger.annotations.ApiOperation
-import org.springframework.beans.factory.annotation.Autowired
-import javax.lang.model.util.AbstractAnnotationValueVisitor6
 
+@Suppress("unused")
 @RestController
 @RequestMapping("/bnk")
 @Api(value = "/bnk", description = "뱅킹 콘트롤러")
@@ -56,6 +56,7 @@ class BnkController {
 
 
         // 입금처리 ======================================================================================================
+        // 입금처리 중 재처리 대상은 -> TaskT2 재처리대상(BnkTask.taskT2())
         input.bankTranId = serviceOpenApi.getBankTranId()   // 거래고유번호
         service.procDps(input)
 

@@ -11,7 +11,7 @@ import javax.persistence.*
 @Description("대외거래 내역")
 data class BnkEtrHst(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var seq: Int = 0,                           // 순번
+    var seq: BigInteger = BigInteger.ZERO,      // 순번
     var createDt: OffsetDateTime? = null,       // 생성일시
     var createUserId: String? = null,           // 생성자 ID
     var createPgmId: String? = null,            // 생성프로그램 ID
@@ -28,7 +28,7 @@ data class BnkEtrHst(
     var rspMessage: String = "",                // 응답메시지(대외기관)
     var etrReqVal: String = "",                 // 대외거래요청값
     var etrResVal: String = "",                 // 대외거래응답값
-    ) {
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false

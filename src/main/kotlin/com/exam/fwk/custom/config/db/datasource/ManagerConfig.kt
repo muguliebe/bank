@@ -1,7 +1,5 @@
 package com.exam.fwk.custom.config.db.datasource
 
-import ch.qos.logback.classic.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -24,35 +22,7 @@ import javax.sql.DataSource
     entityManagerFactoryRef = "entityManagerFactory",
     transactionManagerRef = "publicTransactionManager"
 )
-class PublicDataSource {
-    companion object {
-        private val log = LoggerFactory.getLogger(PublicDataSource::class.java) as Logger
-    }
-
-//    @Bean(name = ["emPublicDataSource"])
-//    @DependsOn("FirstDatasource")
-//    @Order(Ordered.LOWEST_PRECEDENCE)
-//    fun dataSource(
-//        @Value("\${spring.datasource.driver-class-name}") driverClassName: String,
-//        @Value("\${spring.datasource.username}") username: String,
-//        @Value("\${spring.datasource.password}") password: String,
-//        @Value("\${spring.datasource.url}") jdbcUrl: String,
-//    ): DataSource {
-//        log.info("=============== JPA Public DataSource Setting Start =============== ")
-//
-//        val ds = HikariDataSource()
-//        ds.jdbcUrl = jdbcUrl
-//        ds.username = username
-//        ds.password = password
-//        ds.minimumIdle = 5
-//        ds.maximumPoolSize = 100
-//        ds.idleTimeout = 3000
-//        ds.connectionInitSql = "set time zone 'Asia/Seoul'"
-//
-//        log.info("=============== JPA Public DataSource Setting End   =============== ")
-//
-//        return ds
-//    }
+class ManagerConfig {
 
     @Bean(name = ["entityManagerFactory"])
     @Order(Ordered.LOWEST_PRECEDENCE)

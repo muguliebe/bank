@@ -8,3 +8,4 @@ import org.springframework.stereotype.Repository
 interface BnkTrsHstRepo : JpaRepository<BnkTrsHst, Int>
 
 
+

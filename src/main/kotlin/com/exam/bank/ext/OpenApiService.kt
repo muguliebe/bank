@@ -4,11 +4,11 @@ import com.exam.bank.entity.BnkEtrHst
 import com.exam.bank.ext.OpenApiServiceDto.*
 import com.exam.bank.repo.jpa.BnkEtrRepo
 import com.exam.bank.repo.mybatis.SequenceMapper
-import com.exam.fwk.custom.utils.DateUtils
-import com.exam.fwk.custom.utils.ValidUtils
 import com.exam.fwk.core.base.BaseService
 import com.exam.fwk.core.error.BizException
 import com.exam.fwk.core.error.EtrErrException
+import com.exam.fwk.custom.utils.DateUtils
+import com.exam.fwk.custom.utils.ValidUtils
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.Fuel
@@ -23,6 +23,7 @@ import com.google.gson.GsonBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.math.BigInteger
 import javax.annotation.PostConstruct
 
 
@@ -39,7 +40,6 @@ class OpenApiService : BaseService() {
     @PostConstruct
     fun init() {
         objectMapper = ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY) // 빈 필드는 JSON key 생기지 않도록
-        val gson: Gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
 
         // 오픈뱅킹 호출 prepare
         FuelManager.instance.basePath = "http://localhost:${openBankPort}/ext"
@@ -102,7 +102,7 @@ class OpenApiService : BaseService() {
         )
 
         // Response
-        val (request, response, result) = Fuel.post(url)
+        val (_, response, result) = Fuel.post(url)
             .jsonBody(reqJson)
             .responseString()
 
@@ -111,8 +111,7 @@ class OpenApiService : BaseService() {
                 log.error("오픈뱅킹 수취인조회 API 에러 발생:${response.responseMessage}")
 
                 updateBnkEtrHst(
-                    trDy = bnkEtrHst.trDy,
-                    bankTranId = input.bankTranId,
+                    seq = bnkEtrHst.seq,
                     etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
                     etrResVal = response.responseMessage,
                     rspCode = null,
@@ -127,8 +126,7 @@ class OpenApiService : BaseService() {
                 val consigneeGetRes = objectMapper.readValue(result.get(), ConsigneeGetRes::class.java)
 
                 updateBnkEtrHst(
-                    trDy = bnkEtrHst.trDy,
-                    bankTranId = input.bankTranId,
+                    seq = bnkEtrHst.seq,
                     etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
                     etrResVal = result.value,
                     rspCode = consigneeGetRes.rspCode,
@@ -161,7 +159,7 @@ class OpenApiService : BaseService() {
         )
 
         // Response
-        val (request, response, result) = Fuel.post(url)
+        val (_, response, result) = Fuel.post(url)
             .jsonBody(reqJson)
             .responseString()
 
@@ -170,8 +168,7 @@ class OpenApiService : BaseService() {
                 log.error("오픈뱅킹 출금이체 API 에러 발생:${response.responseMessage}")
 
                 updateBnkEtrHst(
-                    trDy = bnkEtrHst.trDy,
-                    bankTranId = input.bankTranId,
+                    seq = bnkEtrHst.seq,
                     etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
                     etrResVal = response.responseMessage,
                     rspCode = null,
@@ -184,8 +181,7 @@ class OpenApiService : BaseService() {
 
                 val wdtrRes = objectMapper.readValue(result.get(), WdtrRes::class.java)
                 updateBnkEtrHst(
-                    trDy = bnkEtrHst.trDy,
-                    bankTranId = input.bankTranId,
+                    seq = bnkEtrHst.seq,
                     etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
                     etrResVal = result.value,
                     rspCode = wdtrRes.rspCode,
@@ -219,7 +215,7 @@ class OpenApiService : BaseService() {
         )
 
         // Response
-        val (request, response, result) = Fuel.post(url)
+        val (_, response, result) = Fuel.post(url)
             .jsonBody(reqJson)
             .responseString()
 
@@ -228,8 +224,7 @@ class OpenApiService : BaseService() {
                 log.error("오픈뱅킹 입금이체 API 에러 발생:${response.responseMessage}")
 
                 updateBnkEtrHst(
-                    trDy = bnkEtrHst.trDy,
-                    bankTranId = input.reqList[0].bankTranId,
+                    seq = bnkEtrHst.seq,
                     etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
                     etrResVal = response.responseMessage,
                     rspCode = null,
@@ -242,8 +237,7 @@ class OpenApiService : BaseService() {
 
                 val dpstrRes = objectMapper.readValue(result.get(), DpstrRes::class.java)
                 updateBnkEtrHst(
-                    trDy = bnkEtrHst.trDy,
-                    bankTranId = input.reqList[0].bankTranId,
+                    seq = bnkEtrHst.seq,
                     etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
                     etrResVal = result.value,
                     rspCode = dpstrRes.rspCode,
@@ -257,6 +251,60 @@ class OpenApiService : BaseService() {
 
     }
 
+    /**
+     * 이체결과조회
+     */
+    fun getTransResult(input: GetTransResultReq): DpstrRes {
+        // init
+        val url = "/v2.0/transfer/result"
+
+        // 오픈뱅킹 수취인 조회 요청 JSON 생성
+        val reqJson = objectMapper.writeValueAsString(input)
+
+        // 요청 전 대외거래내역 저장
+        val bnkEtrHst = saveBnkEtrHst(
+            bankTranId = null,
+            url = url,
+            userId = "0",
+            etrReqVal = reqJson
+        )
+
+        // Response
+        val (_, response, result) = Fuel.post(url)
+            .jsonBody(reqJson)
+            .responseString()
+
+        when (result) {
+            is Result.Failure -> { // 요청 실패 시: 대외거래내역 업데이트 후, 에러 throw
+                log.error("오픈뱅킹 입금이체 API 에러 발생:${response.responseMessage}")
+
+                updateBnkEtrHst(
+                    seq = bnkEtrHst.seq,
+                    etrStatCd = "03", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = response.responseMessage,
+                    rspCode = null,
+                    rspMessage = null,
+                )
+
+                throw EtrErrException(result.getException(), "ETR0001") // ETR0001:대외거래응답 에러입니다.
+            }
+            is Result.Success -> { // 요청 성공 시: 대외거래내역 업데이트 후, 응답 리턴
+
+                val dpstrRes = objectMapper.readValue(result.get(), DpstrRes::class.java)
+                updateBnkEtrHst(
+                    seq = bnkEtrHst.seq,
+                    etrStatCd = "04", // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
+                    etrResVal = result.value,
+                    rspCode = dpstrRes.rspCode,
+                    rspMessage = dpstrRes.rspMessage
+                )
+
+                return dpstrRes
+            }
+        }
+
+    }
+
 
     // =================================================================================================================
     // 아래부터는 대외거래내역 DB func
@@ -265,9 +313,9 @@ class OpenApiService : BaseService() {
     /**
      * 대외거래내역 저장
      */
-    private fun saveBnkEtrHst(bankTranId: String, url: String, userId: String, etrReqVal: String): BnkEtrHst {
+    private fun saveBnkEtrHst(bankTranId: String?, url: String, userId: String, etrReqVal: String): BnkEtrHst {
         // init
-        var result: BnkEtrHst
+        val result: BnkEtrHst
 
         // prepare for save
         val inSave = BnkEtrHst()
@@ -276,11 +324,13 @@ class OpenApiService : BaseService() {
         inSave.createUserId = userId                    // 생성자 ID
         inSave.gid = commons.area.gid                   // gid
         inSave.trDy = DateUtils.currentDy()             // 거래일자
-        inSave.bankTranId = bankTranId                  // 거래고유번호
         inSave.etrUrl = url                             // 대외거래요청URL
         inSave.userId = userId.toBigInteger()           // 사용자ID
         inSave.etrStatCd = "01"                         // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]
         inSave.etrReqVal = etrReqVal                    // 대외거래요청값
+        bankTranId?.let {
+            inSave.bankTranId = bankTranId                  // 거래고유번호
+        }
 
         try {
             // DB Insert : 대외거래내역
@@ -297,8 +347,7 @@ class OpenApiService : BaseService() {
      * - 거래일자, 거래고유번호, 대외요청응답값
      */
     private fun updateBnkEtrHst(
-        trDy: String,
-        bankTranId: String,
+        seq: BigInteger,
         etrStatCd: String,
         etrResVal: String,
         rspCode: String?,
@@ -308,7 +357,7 @@ class OpenApiService : BaseService() {
         val result: BnkEtrHst
 
         // prepare for save
-        val exist = repoEtr.findByTrDyAndBankTranId(trDy, bankTranId)
+        val exist = repoEtr.findById(seq).get()
         exist.updateDt = DateUtils.currentTimeStamp()       // 수정일시
         exist.updatePgmId = javaClass.simpleName            // 수정프로그램 ID
         exist.etrStatCd = etrStatCd                         // 대외거래 상태코드 [01:요청, 02:타임아웃, 03:에러수신, 04:정상수신]

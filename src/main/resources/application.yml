@@ -19,3 +19,10 @@ spring:
       on-profile: dev
   flyway:
     enabled: false
+    validate-on-migrate: false
+db:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: user_bank
+    password: userbank13!#
+    url: jdbc:postgresql://mugu.synology.me:55432/bank

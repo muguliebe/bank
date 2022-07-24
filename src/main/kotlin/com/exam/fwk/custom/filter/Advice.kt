@@ -2,12 +2,12 @@ package com.exam.fwk.custom.filter
 
 import ch.qos.logback.classic.Logger
 import com.exam.bank.repo.jpa.UserRepo
-import com.exam.fwk.custom.utils.DateUtils
 import com.exam.fwk.core.component.Commons
 import com.exam.fwk.core.error.BaseException
 import com.exam.fwk.core.error.UnauthorizedException
 import com.exam.fwk.custom.dto.ComUser
 import com.exam.fwk.custom.service.TransactionService
+import com.exam.fwk.custom.utils.DateUtils
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -104,6 +104,8 @@ class Advice {
             path.startsWith("/sam") -> true
             else -> false
         }
+
+        if(isExceptUrl) return
 
         if (commons.area.user == null) {
             throw UnauthorizedException("인가되지 않은 접근입니다.")

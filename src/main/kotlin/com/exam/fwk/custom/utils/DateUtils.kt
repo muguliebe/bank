@@ -4,6 +4,7 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+@Suppress("unused")
 object DateUtils {
 
     private val zoneId: ZoneId = ZoneId.of("Asia/Seoul")
@@ -29,6 +30,9 @@ object DateUtils {
 
     // 현재 시간 (HHmmss) 리턴
     fun currentTm(): String = currentDateTimeFormat("HHmmss")
+
+    // 현재 일시 (yyyyMMddHHmmss) 리턴
+    fun currentDtm(): String = currentDateTimeFormat("yyyyMMddHHmmss")
 
     // TimeStamp(yyyy.MM.dd HH:mm:ss) 리턴
     fun currentTimeStamp(): OffsetDateTime = OffsetDateTime.now(zoneId)

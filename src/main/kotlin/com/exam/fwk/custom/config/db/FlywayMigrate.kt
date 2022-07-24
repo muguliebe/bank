@@ -2,10 +2,12 @@ package com.exam.fwk.custom.config.db
 
 import org.flywaydb.core.Flyway
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
 
+@Profile("local")
 @Component
 class FlywayMigrate {
 

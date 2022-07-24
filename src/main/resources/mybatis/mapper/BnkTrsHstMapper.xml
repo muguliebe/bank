@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.exam.bank.repo.mybatis.BnkTrsHstMapper">
+
+    <select id="selectForT1" resultType="BnkTrsHst">
+        select /* 하루 이전부터, 출금이체 재처리 대상을 가져온다 */
+            a.seq                    /* 순번 */
+             , a.bank_tran_id          /* 거래 고유 ID */
+             , a.user_id               /* 사용자 ID */
+             , a.trs_stat_cd           /* 이체 상태 코드 [A1:수취조회요청, A2:수최조회응답, B1: 출금이체요청, B2:출금이체수신, C1: 입금이체요청, C2:입금이체수신, D1:완료, E1:불능] */
+             , a.reproc_yn             /* 재처리 여부 */
+             , a.retry_cnt             /* 재처리 건수 */
+             , a.gid                   /* gid */
+             , a.trs_amt               /* 이체 금액 */
+             , a.tr_dy                 /* 거래 일자 */
+             , a.tr_tm                 /* 거래 일시(HHmmss) */
+             , a.wd_acct_no            /* 출금 계좌 번호 */
+             , a.dps_acct_no           /* 입금 계좌 번호 */
+             , a.dps_print_content     /* 입금 인자 내용 */
+             , a.wd_bank_cd            /* 출금 은행 코드 */
+             , a.dps_bank_cd           /* 입금 은행 코드 */
+             , a.wd_print_content      /* 출금 인자 내용 */
+             , a.consignee_nm          /* 수취인 명 */
+          from public.bnk_trs_hst a /* T. 이체내역 */
+         where a.tr_dy >= to_char(now()::date - '1 day'::interval , 'yyyyMMdd')
+           and a.reproc_yn = 'Y'
+           and a.trs_stat_cd in ('B1', 'B2')
+           and a.retry_cnt &lt;= 4
+    </select>
+
+    <select id="selectForT2" resultType="BnkTrsHst">
+        select /* 하루 이전부터, 입금이체 재처리 대상을 가져온다 */
+               a.seq                   /* 순번 */
+             , a.bank_tran_id          /* 거래 고유 ID */
+             , a.user_id               /* 사용자 ID */
+             , a.trs_stat_cd           /* 이체 상태 코드 [A1:수취조회요청, A2:수최조회응답, B1: 출금이체요청, B2:출금이체수신, C1: 입금이체요청, C2:입금이체수신, D1:완료, E1:불능] */
+             , a.reproc_yn             /* 재처리 여부 */
+             , a.retry_cnt             /* 재처리 건수 */
+             , a.gid                   /* gid */
+             , a.trs_amt               /* 이체 금액 */
+             , a.tr_dy                 /* 거래 일자 */
+             , a.tr_tm                 /* 거래 일시(HHmmss) */
+             , a.wd_acct_no            /* 출금 계좌 번호 */
+             , a.dps_acct_no           /* 입금 계좌 번호 */
+             , a.dps_print_content     /* 입금 인자 내용 */
+             , a.wd_bank_cd            /* 출금 은행 코드 */
+             , a.dps_bank_cd           /* 입금 은행 코드 */
+             , a.wd_print_content      /* 출금 인자 내용 */
+             , a.consignee_nm          /* 수취인 명 */
+          from public.bnk_trs_hst a /* T. 이체내역 */
+         where a.tr_dy >= to_char(now()::date - '1 day'::interval , 'yyyyMMdd')
+           and a.reproc_yn = 'Y'
+           and a.trs_stat_cd in ('C1', 'C2')
+           and a.retry_cnt &lt;= 4
+    </select>
+</mapper>

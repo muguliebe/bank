@@ -1,12 +1,12 @@
 package com.exam.bank.service
 
-import com.exam.bank.controller.BnkController.*
+import com.exam.bank.controller.BnkController.TransferIn
 import com.exam.bank.ext.OpenApiService
 import com.exam.bank.ext.OpenApiServiceDto.*
-import com.exam.fwk.custom.utils.ValidUtils
 import com.exam.fwk.core.base.BaseService
 import com.exam.fwk.core.error.BizException
 import com.exam.fwk.core.error.EtrErrException
+import com.exam.fwk.custom.utils.ValidUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -41,7 +41,7 @@ class BnkService : BaseService() {
      */
     fun getConsignee(input: TransferIn): GetConsigneeOut {
         // init
-        var result = GetConsigneeOut()
+        val result = GetConsigneeOut()
 
         // 이체내역 생성
         val bnkTrsHst = serviceDao.saveBnkTrsHst(
@@ -106,6 +106,7 @@ class BnkService : BaseService() {
     fun procWd(input: TransferIn): ProcWdOut {
         // init
         val result = ProcWdOut(successYn = "N")
+        val wdPrintContent = "오픈뱅킹이체-${commons.area.user!!.userNm}" // 출금인자내역
 
         // validation
         ValidUtils.checkRequired(input)
@@ -117,14 +118,14 @@ class BnkService : BaseService() {
         // 이체 상태 코드 [A1:수취조회요청, A2:수최조회응답, B1: 출금이체요청, B2:출금이체수신, C1: 입금이체요청, C2:입금이체수신, D1:완료, E1:불능]
         serviceDao.updateBnkTrsHst(input.bnkTrsHstSeq, input.bankTranId, "B1", "N")
 
-        // 이체처리 API 호출 입력 셋팅
+        // 출금처리 API 호출 입력 셋팅
         val inWdtrReq = WdtrReq()
         inWdtrReq.bankTranId = input.bankTranId
         inWdtrReq.cntrAccountType = "N"                                         // 약정계좌구분[N:계좌]
         inWdtrReq.cntrAccountNum = getAccountNum()                              // 약정계좌번호 <- 이용기관계좌번호
         inWdtrReq.wdBankCodeStd = input.wdBankCodeStd                           // 출금은행.표준코드
         inWdtrReq.wdAccountNum = input.wdAccountNum                             // 출금은행계좌번호
-        inWdtrReq.wdPrintContent = "오픈뱅킹이체-${commons.area.user!!.userNm}"    // 출금인자내역
+        inWdtrReq.wdPrintContent = wdPrintContent                               // 출금인자내역
         inWdtrReq.tranAmt = input.tranAmt                                       // 거래금액
         inWdtrReq.userSeqNo = commons.area.user!!.userSeqNo                     // 사용자일련번호
         inWdtrReq.tranDtime = input.trDy + input.trTm                           // 거래일시(yyyyMMddHHmmss) = 14자리

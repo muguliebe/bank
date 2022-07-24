@@ -2,9 +2,9 @@ package com.exam.bank.service
 
 import com.exam.bank.entity.BnkTrsHst
 import com.exam.bank.repo.jpa.BnkTrsHstRepo
-import com.exam.fwk.custom.utils.DateUtils
 import com.exam.fwk.core.base.BaseService
 import com.exam.fwk.core.error.BizException
+import com.exam.fwk.custom.utils.DateUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -35,7 +35,7 @@ class BnkTrsHstDaoService : BaseService() {
         dpsPrintContent: String     // 입금인자내용
     ): BnkTrsHst {
         // init
-        var result: BnkTrsHst
+        val result: BnkTrsHst
 
         // prepare for save
         val inSave = BnkTrsHst()
@@ -68,10 +68,10 @@ class BnkTrsHstDaoService : BaseService() {
      * 이체내역 수정 - 이체거래상태코드, 재처리여부 update 용
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    fun updateBnkTrsHst(seq:Int, bankTranId: String, trsStatCd: String, reprocYn: String): BnkTrsHst {
+    fun updateBnkTrsHst(seq: Int, bankTranId: String, trsStatCd: String, reprocYn: String): BnkTrsHst {
 
         // init
-        var result: BnkTrsHst
+        val result: BnkTrsHst
 
         // prepare for save
         val exist = repo.findById(seq).get()
@@ -84,7 +84,54 @@ class BnkTrsHstDaoService : BaseService() {
         exist.trsStatCd = trsStatCd
 
         try {
-            // DB Update : 대외거래내역
+            // DB Update : 이체내역
+            result = repo.save(exist)
+        } catch (e: Exception) {
+            throw BizException("이체내역 저장 중 에러가 발생하였습니다.")
+        }
+
+        return result
+
+    }
+
+    /**
+     * 이체내역 재처리 건수 높인다
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun updateBnkTrsHstCntUp(seq: Int): BnkTrsHst {
+
+        // init
+        val result: BnkTrsHst
+
+        // prepare for save
+        val exist = repo.findById(seq).get()
+        exist.retryCnt = exist.retryCnt + 1
+
+        try {
+            // DB Update : 이체내역
+            result = repo.save(exist)
+        } catch (e: Exception) {
+            throw BizException("이체내역 저장 중 에러가 발생하였습니다.")
+        }
+
+        return result
+    }
+
+    /**
+     * 이체내역 재처리 건수 를 클리어한다
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun updateBnkTrsHstCntClear(seq: Int): BnkTrsHst {
+
+        // init
+        val result: BnkTrsHst
+
+        // prepare for save
+        val exist = repo.findById(seq).get()
+        exist.retryCnt = 0
+
+        try {
+            // DB Update : 이체내역
             result = repo.save(exist)
         } catch (e: Exception) {
             throw BizException("이체내역 저장 중 에러가 발생하였습니다.")

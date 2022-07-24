@@ -62,6 +62,7 @@
     <logger name="org.flywaydb" level="info" additivity="false"/>
     <logger name="org.apache" level="info" additivity="false"/>
     <logger name="org.mybatis" level="info" additivity="false"/>
+    <logger name="com.zaxxer.hikari" level="info" additivity="false"/>
 
     <!-- repository -->
     <logger name="com.exam.bank.repo" level="debug" additivity="true"/>

@@ -52,6 +52,9 @@ class MockController : BaseController() {
         return res
     }
 
+    /**
+     * 입금이체 API Mocking
+     */
     @PostMapping("/v2.0/transfer/deposit/acnt_num")
     fun dptr(@RequestBody input: DpstrReq): DpstrRes{
         log.info("오픈뱅킹] 입금이체 API 호출 되었습니다.")
@@ -70,4 +73,27 @@ class MockController : BaseController() {
         log.info("오픈뱅킹] 입금이체 API 응답 합니다.")
         return res
     }
+
+    /**
+     * 이체결과조회 API Mocking
+     */
+    @PostMapping("/v2.0/transfer/result")
+    fun TransResultGet(@RequestBody input: GetTransResultReq): GetTransResultRes{
+        log.info("오픈뱅킹] 이체결과조회 API 호출 되었습니다.")
+        log.debug("오픈뱅킹] 인풋:${input}")
+
+        val sub = GetTransResultResSub()
+        sub.bankRspCode = "000"
+
+        val res = GetTransResultRes()
+        res.resCnt = "1"
+        res.resList.add(sub)
+        res.apiTranId = UUID.randomUUID().toString()
+        res.rspCode = "A0000"
+        res.rspMessage = "처리 성공"
+
+        log.info("오픈뱅킹] 입금이체 API 응답 합니다.")
+        return res
+    }
+
 }
