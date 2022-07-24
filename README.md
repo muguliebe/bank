@@ -57,3 +57,6 @@ test                      ---- 테스트 Root
 
 ## 흐름도
 ![all](/docs/flow.png)
+
+## ERD
+![all](/docs/erd.png)
