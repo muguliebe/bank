@@ -1,4 +1,4 @@
-package com.exam.bank.utils
+package com.exam.fwk.custom.utils
 
 object StringUtils {
 

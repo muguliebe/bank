@@ -30,7 +30,7 @@ class PublicDataSource {
     }
 
 //    @Bean(name = ["emPublicDataSource"])
-//    @DependsOn("embeddedDatasource")
+//    @DependsOn("FirstDatasource")
 //    @Order(Ordered.LOWEST_PRECEDENCE)
 //    fun dataSource(
 //        @Value("\${spring.datasource.driver-class-name}") driverClassName: String,
@@ -57,7 +57,7 @@ class PublicDataSource {
     @Bean(name = ["entityManagerFactory"])
     @Order(Ordered.LOWEST_PRECEDENCE)
     fun entityManagerFactory(
-        @Qualifier("embeddedDatasource") dataSource: DataSource
+        @Qualifier("firstDatasource") dataSource: DataSource
     ): LocalContainerEntityManagerFactoryBean {
 
         val vendorAdapter = HibernateJpaVendorAdapter()
@@ -89,7 +89,7 @@ class PublicDataSource {
     @Order(Ordered.LOWEST_PRECEDENCE)
     fun transactionManager(
         @Qualifier("entityManagerFactory") entityManagerFactory: EntityManagerFactory,
-        @Qualifier("embeddedDatasource") dataSource: DataSource
+        @Qualifier("firstDatasource") dataSource: DataSource
     ): PlatformTransactionManager {
         val jtm = JpaTransactionManager(entityManagerFactory)
         val dstm = DataSourceTransactionManager()

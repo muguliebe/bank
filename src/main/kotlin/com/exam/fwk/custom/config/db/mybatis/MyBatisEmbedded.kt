@@ -25,7 +25,7 @@ class MyBatisEmbedded : MyBatisConfig() {
     @Bean
     @Primary
     @Throws(IOException::class)
-    fun embeddedSqlSessionFactory(@Qualifier("embeddedDatasource") dataSource: DataSource): SqlSessionFactory {
+    fun embeddedSqlSessionFactory(@Qualifier("firstDatasource") dataSource: DataSource): SqlSessionFactory {
         log.info("=============== embeddedSqlSessionFactory Start ===============")
         val sessionFactoryBean = SqlSessionFactoryBean()
         configureSqlSessionFactory(sessionFactoryBean, dataSource)

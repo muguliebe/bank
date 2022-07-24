@@ -1,6 +1,6 @@
 package com.exam.fwk.core.error
 
-import com.exam.bank.utils.DateUtils
+import com.exam.fwk.custom.utils.DateUtils
 import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.servlet.http.HttpServletRequest
 

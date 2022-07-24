@@ -1,4 +1,4 @@
-package com.exam.bank.utils
+package com.exam.fwk.custom.utils
 
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -27,9 +27,11 @@ object DateUtils {
     // 현재 일자 (yyyyMMdd) 리턴
     fun currentDy(): String = currentDateTimeFormat("yyyyMMdd")
 
+    // 현재 시간 (HHmmss) 리턴
+    fun currentTm(): String = currentDateTimeFormat("HHmmss")
+
     // TimeStamp(yyyy.MM.dd HH:mm:ss) 리턴
     fun currentTimeStamp(): OffsetDateTime = OffsetDateTime.now(zoneId)
     fun currentTimestampString(): String = currentDateTimeFormat("yyyy-MM-dd HH:mm:ss")
-    fun currentTimeWithoutColon(): String = currentDateTimeFormat("SSSSSS")
 
 }

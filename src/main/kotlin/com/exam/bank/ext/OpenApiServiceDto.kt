@@ -147,7 +147,9 @@ class OpenApiServiceDto {
     data class DpstrReqSub(
         @Required @Length(len = 5) var tranNo: String = "",                 // 거래순번
         @Required @Length(len = 20) var bankTranId: String = "",            // 거래고유번호
-        @Required @Length(len = 24) var fintechUseNum: String = "",         // 핀테크이용번호
+        @Required @Length(len = 3) var bankCodeStd: String = "",            // 입금은행.표준코드
+        @Required @Length(len = 16) var accountNum: String = "",            // 계좌번호
+        @Length(len = 20) var accountHolderName: String = "",               // 입금계좌예금주명
         @Required @Length(len = 20) var printContent: String = "",          // 입금계좌인자내역
         @Required @Length(len = 12) var tranAmt: String = "",               // 거래금액
         @Required @Length(len = 20) var reqClientName: String = "",         // 요청고객성명
@@ -177,7 +179,7 @@ class OpenApiServiceDto {
         @Length(len = 20) var wdPrintContent: String = "",          // 출금계좌인자내역
         @Length(len = 20) var wdAccountHolderName: String = "",     // 송금인성명
         @Length(len = 5) var resCnt: String = "",                   // 입금건수
-        var reqList: ArrayList<DpstrReqSub> = arrayListOf()         // 입금목록
+        var resList: ArrayList<DpstrResSub> = arrayListOf()         // 입금목록
 
     )
 

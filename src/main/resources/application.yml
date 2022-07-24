@@ -10,3 +10,12 @@ spring:
     enabled: true
     validate-on-migrate: true
     encoding: UTF-8
+  profiles:
+    active: local
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    enabled: false

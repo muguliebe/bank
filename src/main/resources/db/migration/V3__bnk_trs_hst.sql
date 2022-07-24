@@ -9,33 +9,37 @@ CREATE  TABLE "public".bnk_trs_hst (
                                        update_dt            timestamptz    ,
                                        gid                  varchar(36)  NOT NULL  ,
                                        tr_dy                varchar(8)  NOT NULL  ,
+                                       tr_tm                varchar(6)    ,
                                        bank_tran_id         varchar(20)  NOT NULL  ,
                                        user_id              bigint  NOT NULL  ,
                                        trs_stat_cd          varchar(2) DEFAULT 01 NOT NULL  ,
                                        reproc_yn            varchar(1) DEFAULT 'N' NOT NULL  ,
                                        wd_bank_cd           varchar(3)  NOT NULL  ,
                                        wd_acct_no           varchar(16)  NOT NULL  ,
+                                       consignee_nm         varchar(20)  NOT NULL  ,
                                        dps_bank_cd          varchar(3)  NOT NULL  ,
                                        dps_acct_no          varchar(16)  NOT NULL  ,
-                                       trs_amt              numeric(13,0)    ,
+                                       trs_amt              varchar(12)    ,
                                        wd_print_content     varchar(14)  NOT NULL  ,
                                        dps_print_content    varchar(20)  NOT NULL  ,
                                        CONSTRAINT pk_bnk_trs PRIMARY KEY ( seq )
 );
 
-CREATE INDEX idx_bnk_trs_hst ON "public".bnk_trs_hst  ( tr_dy, user_id, bank_tran_id );
 CREATE INDEX idx_bnk_trs_hst_0 ON "public".bnk_trs_hst  ( user_id, tr_dy, trs_stat_cd );
 CREATE INDEX idx_bnk_trs_hst_1 ON "public".bnk_trs_hst  ( tr_dy, reproc_yn, trs_stat_cd );
+CREATE INDEX idx_bnk_trs_hst ON "public".bnk_trs_hst  ( tr_dy, user_id, tr_tm, bank_tran_id );
 
 COMMENT ON TABLE "public".bnk_trs_hst IS '이체내역';
 COMMENT ON COLUMN "public".bnk_trs_hst.gid IS 'gid';
 COMMENT ON COLUMN "public".bnk_trs_hst.tr_dy IS '거래 일자';
+COMMENT ON COLUMN "public".bnk_trs_hst.tr_tm IS '거래 일시(HHmmss)';
 COMMENT ON COLUMN "public".bnk_trs_hst.bank_tran_id IS '거래 고유 ID';
 COMMENT ON COLUMN "public".bnk_trs_hst.user_id IS '사용자 ID';
-COMMENT ON COLUMN "public".bnk_trs_hst.trs_stat_cd IS '이체 상태 코드 [A1:수취조회요청, A2:수최조회응답, B1: 출금이체요청, B2:출금이체수신, C1: 입금이체요청, C2:입금이체수신, D1:완료]';
+COMMENT ON COLUMN "public".bnk_trs_hst.trs_stat_cd IS '이체 상태 코드 [A1:수취조회요청, A2:수최조회응답, B1: 출금이체요청, B2:출금이체수신, C1: 입금이체요청, C2:입금이체수신, D1:완료, E1:불능]';
 COMMENT ON COLUMN "public".bnk_trs_hst.reproc_yn IS '재처리 여부';
 COMMENT ON COLUMN "public".bnk_trs_hst.wd_bank_cd IS '출금 은행 코드';
 COMMENT ON COLUMN "public".bnk_trs_hst.wd_acct_no IS '출금 계좌 번호';
+COMMENT ON COLUMN "public".bnk_trs_hst.consignee_nm IS '수취인 명';
 COMMENT ON COLUMN "public".bnk_trs_hst.dps_bank_cd IS '입금 은행 코드';
 COMMENT ON COLUMN "public".bnk_trs_hst.dps_acct_no IS '입금 계좌 번호';
 COMMENT ON COLUMN "public".bnk_trs_hst.trs_amt IS '이체 금액';

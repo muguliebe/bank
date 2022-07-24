@@ -2,7 +2,7 @@ package com.exam.fwk.custom.service
 
 import com.exam.bank.dto.FwkTransactionHst
 import com.exam.bank.repo.mybatis.TransactionMapper
-import com.exam.bank.utils.DateUtils
+import com.exam.fwk.custom.utils.DateUtils
 import com.exam.fwk.core.base.BaseService
 import com.exam.fwk.custom.dto.CommonArea
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,7 +47,7 @@ class TransactionService : BaseService() {
         tr.errMsg = commons.errMsg
         tr.referrer = commons.referrer
         tr.createDt = DateUtils.currentTimeStamp()
-        tr.createUserId = commons.user?.userId
+        tr.createUserId = commons.user?.userId.toString()
 
         // insert
         mapper.insertTransaction(tr)

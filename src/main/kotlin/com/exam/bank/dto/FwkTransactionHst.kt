@@ -19,6 +19,6 @@ data class FwkTransactionHst(
         var queryStr: String? = null,                     // HTTP Query String
         var body: String? = null,                         // HTTP Input Body
         var errMsg: String? = null,                       // 에러 메시지
-        var createUserId: Int? = null,                    // 생성자 ID
+        var createUserId: String? = null,                 // 생성자 ID
         var createDt: OffsetDateTime? = null              // 생성 일시
 )

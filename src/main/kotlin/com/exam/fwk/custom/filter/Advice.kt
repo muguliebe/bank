@@ -1,9 +1,12 @@
 package com.exam.fwk.custom.filter
 
 import ch.qos.logback.classic.Logger
-import com.exam.bank.utils.DateUtils
+import com.exam.bank.repo.jpa.UserRepo
+import com.exam.fwk.custom.utils.DateUtils
 import com.exam.fwk.core.component.Commons
 import com.exam.fwk.core.error.BaseException
+import com.exam.fwk.core.error.UnauthorizedException
+import com.exam.fwk.custom.dto.ComUser
 import com.exam.fwk.custom.service.TransactionService
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -32,8 +35,9 @@ class Advice {
         val log: Logger = LoggerFactory.getLogger(Advice::class.java) as Logger
     }
 
-    @Autowired lateinit var commons: Commons                             // Common 영역
-    @Autowired lateinit var serviceTransaction: TransactionService // 거래내역 서비스
+    @Autowired lateinit var commons: Commons                        // Common 영역
+    @Autowired lateinit var serviceTransaction: TransactionService  // 거래내역 서비스
+    @Autowired lateinit var repoUser: UserRepo                      // 사용자 Repo
 
     /**
      * 콘트롤러 전/후 처리
@@ -42,16 +46,18 @@ class Advice {
     fun aroundController(pjp: ProceedingJoinPoint): Any? {
 
         // Init --------------------------------------------------------------------------------------------------------
-        lateinit var result: Any
+        var result: Any?
         val req = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).request
         val comArea = commons.area
         val signatureName = "${pjp.signature.declaringType.simpleName}.${pjp.signature.name}"
 
-        setCommonArea(req) // CommonArea 설정
+        setAuth(req)        // 사용자 인증
+        setCommonArea(req)  // CommonArea 설정
 
         // Main --------------------------------------------------------------------------------------------------------
         log.info("[${comArea.gid}] >>>>>  controller start [$signatureName() from [${req.remoteAddr}] by ${req.method} ${req.requestURI}")
         try {
+            validPermission() // 권한이 있는 접근인지 검사
             comArea.elapsed = measureTimeMillis {
                 result = pjp.proceed()
             }
@@ -67,6 +73,41 @@ class Advice {
         log.info("[${comArea.gid}] <<<<<  controller   end [$signatureName() from [${comArea.remoteIp}] [${comArea.elapsed}ms]")
         return result
 
+    }
+
+    /**
+     * 사용자 인증
+     * - 토큰이 아닌 사용자 ID로 인증처리 합니다.
+     * - 사용자 ID 로 DB 조회
+     */
+    private fun setAuth(req: HttpServletRequest) {
+        val authorization = req.getHeader("Authorization")
+
+        if (authorization != null && authorization.isNotEmpty()) {
+            val optionUser = repoUser.findById(authorization.toBigInteger())
+            if (!optionUser.isPresent)
+                throw UnauthorizedException("존재하지 않는 사용자입니다.")
+
+            val user = optionUser.get()
+
+            commons.area.user = ComUser(userId = user.userId, userNm = user.userNm, userSeqNo = user.userSeqNo)
+        }
+    }
+
+    /**
+     * 권한이 있는 접근인지 검사합니다.
+     */
+    private fun validPermission() {
+        val path = commons.area.path
+        val isExceptUrl = when {
+            path == "/" -> true
+            path.startsWith("/sam") -> true
+            else -> false
+        }
+
+        if (commons.area.user == null) {
+            throw UnauthorizedException("인가되지 않은 접근입니다.")
+        }
     }
 
     /**
@@ -96,7 +137,8 @@ class Advice {
     private fun saveTransaction(ex: Exception? = null) {
 
         val request = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).request
-        val response = (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response as HttpServletResponse
+        val response =
+            (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response as HttpServletResponse
         val comArea = commons.area
         comArea.err = ex
         comArea.endDt = OffsetDateTime.now(ZoneId.of("+9"))
@@ -154,8 +196,10 @@ class Advice {
             throw e
         } finally {
             val returnForLog = when {
-                result != null && result.toString().length > 120 -> "{ ${result.toString()
-                        .slice(0..120)}...}"
+                result != null && result.toString().length > 120 -> "{ ${
+                    result.toString()
+                        .slice(0..120)
+                }...}"
                 result != null -> "{ $result }"
                 else -> ""
             }

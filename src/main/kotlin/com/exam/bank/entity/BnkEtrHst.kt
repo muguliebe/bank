@@ -12,6 +12,12 @@ import javax.persistence.*
 data class BnkEtrHst(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var seq: Int = 0,                           // 순번
+    var createDt: OffsetDateTime? = null,       // 생성일시
+    var createUserId: String? = null,           // 생성자 ID
+    var createPgmId: String? = null,            // 생성프로그램 ID
+    var updateDt: OffsetDateTime? = null,       // 수정일시
+    var updateUserId: String? = null,           // 수정자 ID
+    var updatePgmId: String? = null,            // 수정프로그램 ID
     var gid: String = "",                       // gid
     var trDy: String = "",                      // 거래일자
     var etrUrl: String = "",                    // 대외거래URL
@@ -22,12 +28,6 @@ data class BnkEtrHst(
     var rspMessage: String = "",                // 응답메시지(대외기관)
     var etrReqVal: String = "",                 // 대외거래요청값
     var etrResVal: String = "",                 // 대외거래응답값
-    var createDt: OffsetDateTime? = null,       // 생성일시
-    var createUserId: String? = null,           // 생성자 ID
-    var createPgmId: String? = null,            // 생성프로그램 ID
-    var updateDt: OffsetDateTime? = null,       // 수정일시
-    var updateUserId: String? = null,           // 수정자 ID
-    var updatePgmId: String? = null,            // 수정프로그램 ID
     ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

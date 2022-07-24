@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 
 @Transactional
-abstract class BaseService {
+abstract class BaseService : BaseObject() {
 
     protected final val log = LoggerFactory.getLogger(this::class.java) as Logger
 
